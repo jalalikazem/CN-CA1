@@ -108,6 +108,13 @@ void handleHomeIndex(int new_socket, char* head)
     send_message(new_socket, path_head, head);
 }
 
+void handleNotFoundPage(int new_socket, char* head) 
+{
+    char path_head[500] = ".";
+    strcat(path_head, "/404.html");
+    strcat(head, "Content-Type: text/html\r\n\r\n");
+    send_message(new_socket, path_head, head);
+}
 
 void parse_request(char *buffer, char **requestMethod, char **parse_path, char **parse_ext)
 {
@@ -144,6 +151,10 @@ void handleRequest(int new_socket)
         if(strlen(parse_path) <= 1 || strcmp(parse_path, "/index.html") == 0)
         {
             handleHomeIndex(new_socket, copy_head);
+        }
+        else
+        {
+            handleNotFoundPage(new_socket, copy_head);
         }
         printf("\n--------Server sent------\n");
     }
