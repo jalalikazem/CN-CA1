@@ -21,7 +21,6 @@ char* parse(char line[], const char symbol[])
     
     char *message;
     char *token = strtok(copy, symbol);
-    printf("buffer2 : %s\n", line);
 
     while(token != NULL) {
         token = strtok(NULL, " ");
@@ -29,7 +28,6 @@ char* parse(char line[], const char symbol[])
         if(message == NULL){
             message = "";
         }
-        printf("here2 : %s\n", message);
         return message;
     }
    free(token);
@@ -53,7 +51,6 @@ char* parse_method(char line[], const char symbol[])
         if(message == NULL){
             message = "";
         }
-        printf("here1 : %s\n", message);
         return message;
         current = current + 1;
     }
@@ -66,13 +63,14 @@ int send_message(int fd, char file_path[], char head[]){
 
     struct stat stat_buf; 
 
-    write(fd, head, strlen(head));
 
     int fd_file = open(file_path, O_RDONLY);
     
     if(fd_file < 0){
         printf("Cannot Open file path : %s with error %d\n", file_path, fd_file); 
+        return 0;
     }
+    write(fd, head, strlen(head));
      
     fstat(fd_file, &stat_buf);
     int file_total_size = stat_buf.st_size;
@@ -90,22 +88,35 @@ int send_message(int fd, char file_path[], char head[]){
             printf("send file: %s \n" , file_path);
         }
         close(fd_file);
+        return 1;
     }
+    return 0;
 }
 
 int getPort() 
 {
     int port = 0;
+    printf("type your server address like this 'localhost:port':");
     scanf("localhost:%d", &port);
     return port;
 }
 
-void handleHomeIndex(int new_socket, char* head) 
+void handleHomeIndex(int new_socket, char *head) 
 {
     char path_head[500] = ".";
     strcat(path_head, "/index.html");
     strcat(head, "Content-Type: text/html\r\n\r\n");
     send_message(new_socket, path_head, head);
+}
+
+int handlePdfFile(int new_socket, char *head, char *filePath)
+{
+    char path_head[500] = ".";
+    strcat(path_head, filePath);
+    char *copy_head = (char *)malloc(strlen(head) + 1);
+    strcpy(copy_head, head);
+    strcat(copy_head, "Content-Type: application/pdf\r\n\r\n");
+    return send_message(new_socket, path_head, copy_head);
 }
 
 void handleNotFoundPage(int new_socket, char* head) 
@@ -147,10 +158,19 @@ void handleRequest(int new_socket)
     strcpy(copy_head, http_header);
 
 
-    if(strcmp(requestMethod, "GET") == 0){
+    if(strcmp(requestMethod, "GET") == 0)
+    {
         if(strlen(parse_path) <= 1 || strcmp(parse_path, "/index.html") == 0)
         {
             handleHomeIndex(new_socket, copy_head);
+        }
+        else if(strcmp(parse_ext, "pdf") == 0)
+        {
+            int result = handlePdfFile(new_socket, copy_head, parse_path);
+            if(!result) 
+            {
+                handleNotFoundPage(new_socket, copy_head);
+            }
         }
         else
         {
