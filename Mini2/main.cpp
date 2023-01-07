@@ -37,7 +37,6 @@ char* parse(char line[], const char symbol[])
 
 char* parse_method(char line[], const char symbol[])
 {
-    printf("buffer1 : %s\n", line);
 
     char *copy = (char *)malloc(strlen(line) + 1);
     strcpy(copy, line);
@@ -129,7 +128,6 @@ int handleGifFile(int new_socket, char *head, char *filePath)
     return send_message(new_socket, path_head, copy_head);
 }
 
-
 int handleJpegFile(int new_socket, char *head, char *filePath)
 {
     char path_head[500] = ".";
@@ -140,6 +138,15 @@ int handleJpegFile(int new_socket, char *head, char *filePath)
     return send_message(new_socket, path_head, copy_head);
 }
 
+int handleMp3File(int new_socket, char *head, char *filePath)
+{
+    char path_head[500] = ".";
+    strcat(path_head, filePath);
+    char *copy_head = (char *)malloc(strlen(head) + 1);
+    strcpy(copy_head, head);
+    strcat(copy_head, "Content-Type: audio/mpeg\r\n\r\n");
+    return send_message(new_socket, path_head, copy_head);
+}
 
 void handleNotFoundPage(int new_socket, char* head) 
 {
@@ -205,6 +212,14 @@ void handleRequest(int new_socket)
         else if(strcmp(parse_ext, "jpeg") == 0)
         {
             int result = handleJpegFile(new_socket, copy_head, parse_path);
+            if(!result) 
+            {
+                handleNotFoundPage(new_socket, copy_head);
+            }
+        }
+        else if(strcmp(parse_ext, "mp3") == 0)
+        {
+            int result = handleMp3File(new_socket, copy_head, parse_path);
             if(!result) 
             {
                 handleNotFoundPage(new_socket, copy_head);
