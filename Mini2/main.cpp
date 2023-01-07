@@ -119,6 +119,28 @@ int handlePdfFile(int new_socket, char *head, char *filePath)
     return send_message(new_socket, path_head, copy_head);
 }
 
+int handleGifFile(int new_socket, char *head, char *filePath)
+{
+    char path_head[500] = ".";
+    strcat(path_head, filePath);
+    char *copy_head = (char *)malloc(strlen(head) + 1);
+    strcpy(copy_head, head);
+    strcat(copy_head, "Content-Type: image/gif\r\n\r\n");
+    return send_message(new_socket, path_head, copy_head);
+}
+
+
+int handleJpegFile(int new_socket, char *head, char *filePath)
+{
+    char path_head[500] = ".";
+    strcat(path_head, filePath);
+    char *copy_head = (char *)malloc(strlen(head) + 1);
+    strcpy(copy_head, head);
+    strcat(copy_head, "Content-Type: image/jpeg\r\n\r\n");
+    return send_message(new_socket, path_head, copy_head);
+}
+
+
 void handleNotFoundPage(int new_socket, char* head) 
 {
     char path_head[500] = ".";
@@ -167,6 +189,22 @@ void handleRequest(int new_socket)
         else if(strcmp(parse_ext, "pdf") == 0)
         {
             int result = handlePdfFile(new_socket, copy_head, parse_path);
+            if(!result) 
+            {
+                handleNotFoundPage(new_socket, copy_head);
+            }
+        }
+        else if(strcmp(parse_ext, "gif") == 0)
+        {
+            int result = handleGifFile(new_socket, copy_head, parse_path);
+            if(!result) 
+            {
+                handleNotFoundPage(new_socket, copy_head);
+            }
+        }
+        else if(strcmp(parse_ext, "jpeg") == 0)
+        {
+            int result = handleJpegFile(new_socket, copy_head, parse_path);
             if(!result) 
             {
                 handleNotFoundPage(new_socket, copy_head);
