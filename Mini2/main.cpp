@@ -108,6 +108,18 @@ void handleHomeIndex(int new_socket, char *head)
     send_message(new_socket, path_head, head);
 }
 
+void handleRequestDetails(int new_socket, char *head, char *requestMethod, char *parse_path) 
+{	
+    char path_head[500] = "Request Details :\n";
+    strcat(path_head, "Method : ");
+    strcat(path_head, requestMethod);
+    strcat(path_head, "\nPath : ");
+    strcat(path_head, parse_path);
+    strcat(head, "Content-Type: text/plain\r\n\r\n");
+    write(new_socket, head, strlen(head));
+    write(new_socket, path_head, strlen(path_head));
+}
+
 int handlePdfFile(int new_socket, char *head, char *filePath)
 {
     char path_head[500] = ".";
@@ -227,7 +239,7 @@ void handleRequest(int new_socket)
         }
         else
         {
-            handleNotFoundPage(new_socket, copy_head);
+            handleRequestDetails(new_socket, copy_head, requestMethod, parse_path);
         }
         printf("\n--------Server sent------\n");
     }
